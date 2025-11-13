@@ -1,52 +1,64 @@
-from flask import Flask, request, jsonify, send_from_directory # send_from_directory is new
+from flask import Flask, request, jsonify, render_template
 from datetime import datetime
-from flask_cors import CORS 
+from flask_cors import CORS
+import os
 
-app = Flask(__name__)
-# CORS is mainly needed for local development, but good practice
-CORS(app) 
+app = Flask(__name__)  # uses 'templates' and 'static' by default
+CORS(app)
 
-# Global in-memory storage (data will be lost when the server restarts)
+# In-memory storage of pH data (lost when server restarts)
 PH_DATA_STORE = []
 
-# --- 1. Endpoint for Webpage (Frontend) ---
-@app.route('/')
-def serve_index():
-    # This tells Flask to look for 'index.html' in the current directory and serve it.
-    return send_from_directory('.', 'index.html') 
 
-# --- 2. Endpoint for Android App to POST data ---
-@app.route('/api/upload-ph', methods=['POST'])
-def upload_ph():
-    data = request.json
-    
-    if 'timestamp' not in data or 'ph' not in data:
-        return jsonify({"error": "Missing timestamp or ph value"}), 400
+# --- 1. Frontend route ---
+@app.route("/")
+def index():
+    # Renders templates/index.html
+    return render_template("index.html")
 
-    try:
-        new_reading = {
-            "timestamp": int(data['timestamp']),
-            "ph": float(data['ph'])
-        }
-        PH_DATA_STORE.append(new_reading)
-        
-        print(f"New pH reading received: {new_reading}")
-        return jsonify({"message": "Data received successfully"}), 201
-    except ValueError:
-        return jsonify({"error": "Invalid data type for timestamp or ph"}), 400
 
-# --- 3. Endpoint for Webpage to GET data ---
-@app.route('/api/ph-data', methods=['GET'])
+# --- 2. Health check for Render ---
+@app.route("/healthz")
+def healthz():
+    return "ok", 200
+
+
+# --- 3. Endpoint for device to POST pH data ---
+@app.route("/api/ph-data", methods=["POST"])
+def post_ph_data():
+    data = request.get_json(force=True) or {}
+
+    ph = data.get("ph")
+    timestamp = data.get("timestamp")
+
+    # Basic validation
+    if ph is None:
+        return jsonify({"error": "Missing 'ph' field"}), 400
+
+    # If no timestamp provided, use current UTC time
+    if timestamp is None:
+        timestamp = datetime.utcnow().isoformat() + "Z"
+
+    entry = {
+        "ph": ph,
+        "timestamp": timestamp,
+    }
+    PH_DATA_STORE.append(entry)
+
+    # Optional: keep only the last N entries
+    if len(PH_DATA_STORE) > 1000:
+        PH_DATA_STORE.pop(0)
+
+    return jsonify({"status": "ok"}), 201
+
+
+# --- 4. Endpoint for webpage to GET pH data ---
+@app.route("/api/ph-data", methods=["GET"])
 def get_ph_data():
-    # Return the entire list of data stored in memory
     return jsonify(PH_DATA_STORE)
 
-# --- 4. Endpoint for JavaScript File ---
-@app.route('/app.js')
-def serve_js():
-    # Serve the JavaScript file
-    return send_from_directory('.', 'app.js')
 
-if __name__ == '__main__':
-    # Use a dynamic port for local testing, but Render will handle the port
-    app.run(host='0.0.0.0', port=5000, debug=True)
+if __name__ == "__main__":
+    # Local dev: default to 5000; Render uses PORT env var (via gunicorn)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port, debug=True)
