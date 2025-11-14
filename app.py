@@ -57,11 +57,6 @@ def post_ph_data():
 def get_ph_data():
     return jsonify(PH_DATA_STORE)
 
-@app.route("/api/ph-data", methods=["GET"])
-def get_ph_data():
-    return jsonify(PH_DATA_STORE)
-
-
 # --- 5. Endpoint to clear all stored pH data ---
 @app.route("/api/ph-data", methods=["DELETE"])
 def clear_ph_data():
