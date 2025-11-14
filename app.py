@@ -57,6 +57,17 @@ def post_ph_data():
 def get_ph_data():
     return jsonify(PH_DATA_STORE)
 
+@app.route("/api/ph-data", methods=["GET"])
+def get_ph_data():
+    return jsonify(PH_DATA_STORE)
+
+
+# --- 5. Endpoint to clear all stored pH data ---
+@app.route("/api/ph-data", methods=["DELETE"])
+def clear_ph_data():
+    PH_DATA_STORE.clear()
+    return jsonify({"status": "cleared"}), 200
+
 
 if __name__ == "__main__":
     # Local dev: default to 5000; Render uses PORT env var (via gunicorn)
