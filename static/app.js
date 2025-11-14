@@ -1,7 +1,7 @@
 // API lives on the same domain as the page
 const API_URL = '/api/ph-data';
-const POLLING_INTERVAL_MS = 10000; // 10 seconds
-
+const POLLING_INTERVAL_MS = 1000; // 1 seconds
+ 
 let chart;
 let chartData = {
     labels: [],
