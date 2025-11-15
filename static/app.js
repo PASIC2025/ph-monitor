@@ -39,14 +39,29 @@ function initChart() {
             },
             scales: {
                 x: {
-                    title: { display: true, text: 'Time' },
-                    ticks: {
-                        maxTicksLimit: 6
-                    },
-                    grid: {
-                        color: 'rgba(30,64,175,0.35)'
-                    }
-                },
+		title: { display: true, text: 'Time' },
+		ticks: {
+        maxRotation: 90,
+        minRotation: 90,
+        color: '#9ca3af',
+        callback: function(value, index) {
+            const raw = this.getLabelForValue(value);
+            if (!raw) return '';
+            const date = new Date(raw);
+
+            // Short formatted timestamp (HH:MM:SS)
+            return date.toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+                second: "2-digit"
+            });
+        }
+    },
+    grid: {
+        color: 'rgba(30,64,175,0.35)'
+    }
+},
+
                 y: {
                     title: { display: true, text: 'pH' },
                     suggestedMin: 0,
