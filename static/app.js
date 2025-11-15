@@ -38,7 +38,7 @@ function initChart() {
                 }
             },
             scales: {
-                 x: {
+               x: {
     title: { display: true, text: 'Time' },
     ticks: {
         maxRotation: 90,
@@ -48,29 +48,26 @@ function initChart() {
             const raw = this.getLabelForValue(value);
             if (!raw) return '';
 
-            // If label is already short HH:mm:ss from the phone, just use it
+            // Case 1: already short HH:mm:ss from phone
             if (/^\d{2}:\d{2}:\d{2}$/.test(raw)) {
                 return raw;
             }
 
-            // Otherwise (e.g. future ISO timestamps), try to parse & shorten
-            const d = new Date(raw);
-            if (isNaN(d.getTime())) {
-                // Fallback – show whatever we got
-                return raw;
+            // Case 2: ISO-like "2025-01-12T20:34:12Z"
+            const m = raw.match(/T(\d{2}:\d{2}:\d{2})/);
+            if (m) {
+                return m[1]; // "20:34:12"
             }
 
-            return d.toLocaleTimeString([], {
-                hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit'
-            });
+            // Fallback: just show whatever we have
+            return raw;
         }
     },
     grid: {
         color: 'rgba(30,64,175,0.35)'
     }
 },
+
 
 
                 y: {
