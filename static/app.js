@@ -38,22 +38,32 @@ function initChart() {
                 }
             },
             scales: {
-                x: {
-		title: { display: true, text: 'Time' },
-		ticks: {
+                 x: {
+    title: { display: true, text: 'Time' },
+    ticks: {
         maxRotation: 90,
         minRotation: 90,
         color: '#9ca3af',
-        callback: function(value, index) {
+        callback: function (value) {
             const raw = this.getLabelForValue(value);
             if (!raw) return '';
-            const date = new Date(raw);
 
-            // Short formatted timestamp (HH:MM:SS)
-            return date.toLocaleTimeString([], {
-                hour: "2-digit",
-                minute: "2-digit",
-                second: "2-digit"
+            // If label is already short HH:mm:ss from the phone, just use it
+            if (/^\d{2}:\d{2}:\d{2}$/.test(raw)) {
+                return raw;
+            }
+
+            // Otherwise (e.g. future ISO timestamps), try to parse & shorten
+            const d = new Date(raw);
+            if (isNaN(d.getTime())) {
+                // Fallback – show whatever we got
+                return raw;
+            }
+
+            return d.toLocaleTimeString([], {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
             });
         }
     },
@@ -61,6 +71,7 @@ function initChart() {
         color: 'rgba(30,64,175,0.35)'
     }
 },
+
 
                 y: {
                     title: { display: true, text: 'pH' },
