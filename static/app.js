@@ -72,10 +72,10 @@ function initChart() {
 
                 y: {
                     title: { display: true, text: 'pH' },
-                    suggestedMin: 2,
-                    suggestedMax: 10,
+                    min: 2,
+                    max: 10,
                     grid: {
-                        color: 'rgba(30,64,175,0.35)'
+                        color: 'rgba(3,64,175,0.35)'
                     }
                 }
             }
